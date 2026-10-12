@@ -24,7 +24,7 @@ Script Purpose:
 	product_name NVARCHAR(200),
 	quantity INT,
 	invoice_date  VARCHAR(50),
-	unit_price FLOAT,
+	unit_price DECIMAL(10,2),
 	customer_id INT,
 	country NVARCHAR(50)
 	);
