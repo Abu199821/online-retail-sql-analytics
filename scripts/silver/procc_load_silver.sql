@@ -7,9 +7,9 @@
 CREATE OR ALTER PROCEDURE silver.load_silver AS 
 BEGIN 
 	BEGIN TRY 
-				PRINT '>>======================================================================';
+				PRINT '===========================================================================================';
 				PRINT 'LOADING DATA TO SILVER LAYER '
-				PRINT '>>======================================================================';
+				PRINT '===========================================================================================';
 
 				DECLARE @start_time DATETIME,@end_time DATETIME,@batch_start_time DATETIME,@batch_end_time DATETIME;
 				PRINT '>> Truncating Table : silver.onlineretail';
@@ -44,10 +44,10 @@ BEGIN
 			PRINT '>> Loading Duration : ' + CAST(DATEDIFF(second,@start_time,@end_time) AS NVARCHAR) + ' seconds.'
 			PRINT '===========================================================================================';
 			-- Calculaating Silver Layer Duration Time.
-			PRINT '>>=========================================================';
+			PRINT '===========================================================================================';
 			PRINT 'Loading Silver Layer is Completed.';
 			PRINT 'TOTAL DURATION OF LOADING : ' + CAST(DATEDIFF(second,@batch_start_time,@batch_end_time) as NVARCHAR)+ ' seconds.';
-			PRINT '>>=========================================================';
+			PRINT '===========================================================================================';
 	END TRY
 	--Error handling
 	BEGIN CATCH
