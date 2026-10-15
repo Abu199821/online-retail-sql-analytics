@@ -1,7 +1,7 @@
 --===========================================================================
 --						LOADING SILVER LAYER
 --						TABLE : silver.onlineretail
---						ELT
+--						ELT method
 --===========================================================================
 -- Creating Store Procedure 
 CREATE OR ALTER PROCEDURE silver.load_silver AS 
