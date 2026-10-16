@@ -25,11 +25,7 @@ Note:
 ===============================================================================
 */
 
-USE ECommerceAnalytics;
-GO
 
-CREATE SCHEMA silver;
-GO
 
 IF OBJECT_ID('silver.onlineretail', 'U') IS NOT NULL
     DROP TABLE silver.onlineretail;
