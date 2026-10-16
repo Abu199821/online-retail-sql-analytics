@@ -10,14 +10,8 @@ Script Purpose:
 ==============================================================================
 
 */
-Create Database ECommerceAnalytics ;
-Go
 
-USE ECommerceAnalytics;
-GO
 
-	CREATE SCHEMA bronze;
-	GO
 
 
 	IF OBJECT_ID('bronze.onlineretail','U') IS NOT NULL
