@@ -1,18 +1,22 @@
 /*
 ===============================================================================
 Purpose:
-    Create a stored procedure to load the Silver layer from the Bronze layer.
-    This process applies data cleansing, standardization, and validation rules
-    to improve data quality and prepare the dataset for downstream analytics.
+    Create a stored procedure to load data from the Bronze layer into the
+    Silver layer by truncating the target table and reloading the dataset.
 
-Source:
+Source Table:
     bronze.onlineretail
 
-Target:
+Target Table:
     silver.onlineretail
 
-Load Method:
-    ELT (Extract, Load, Transform)
+Load Strategy:
+    Full Refresh (TRUNCATE and INSERT)
+
+Additional Features:
+    - Track data loading duration.
+    - Display loading progress messages.
+    - Handle and report errors using TRY...CATCH.
 
 ===============================================================================
 */
