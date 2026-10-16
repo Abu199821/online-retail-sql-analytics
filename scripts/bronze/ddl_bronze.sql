@@ -10,6 +10,12 @@ Script Purpose:
 ==============================================================================
 
 */
+Create Database ECommerceAnalytics ;
+Go
+
+USE ECommerceAnalytics;
+GO
+
 	CREATE SCHEMA bronze;
 	GO
 
