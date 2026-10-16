@@ -1,9 +1,21 @@
---===========================================================================
---						LOADING SILVER LAYER
---						TABLE : silver.onlineretail
---						ELT method
---===========================================================================
--- Creating Store Procedure 
+/*
+===============================================================================
+Purpose:
+    Create a stored procedure to load the Silver layer from the Bronze layer.
+    This process applies data cleansing, standardization, and validation rules
+    to improve data quality and prepare the dataset for downstream analytics.
+
+Source:
+    bronze.onlineretail
+
+Target:
+    silver.onlineretail
+
+Load Method:
+    ELT (Extract, Load, Transform)
+
+===============================================================================
+*/
 CREATE OR ALTER PROCEDURE silver.load_silver AS 
 BEGIN 
 	BEGIN TRY 
