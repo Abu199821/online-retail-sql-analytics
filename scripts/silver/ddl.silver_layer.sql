@@ -42,7 +42,7 @@ BEGIN
 		stock_key NVARCHAR(50),
 		product_name NVARCHAR(200),
 		quantity INT,
-		invoice_date DATETIME2,
+		invoice_date DATE,
 		unit_price DECIMAL(10,2),
 		customer_id INT,
 		country NVARCHAR(50)
