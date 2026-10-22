@@ -33,6 +33,7 @@ BEGIN
 				PRINT '>> Inserting Data Into : silver.onlineretail';
 				SET @batch_start_time=GETDATE();
 				SET @start_time=GETDATE();
+
 				INSERT INTO silver.onlineretail (
 				Invoice_key,
 				stock_key,
@@ -43,17 +44,57 @@ BEGIN
 				customer_id,
 				country
 				)
-			SELECT 
-			Invoice_key,
-			stock_key,
-			product_name,
-			quantity,
-			invoice_date,
-			unit_price,
-			customer_id,
-			country
-			FROM bronze.onlineretail;
+				WITH CTE AS(
+				SELECT *,
+					ROW_NUMBER() OVER(PARTITION BY 
+												stock_key,
+												product_name,
+												invoice_key,
+												invoice_date,
+												quantity,
+												unit_price,
+												customer_id,
+												country
+												ORDER BY invoice_date ASC) AS RN
+				FROM bronze.onlineretail)
+				SELECT 
+					TRIM(A.Invoice_key) AS invoice_key,
+					TRIM(A.stock_key) AS stock_key,
+				    CASE
+				    WHEN A.product_name IS NULL OR A.unit_price <= 0
+				        THEN COALESCE(B.product_name, A.product_name)
+				    ELSE ISNULL(A.product_name,'unavailable')
+				END AS product_name,
+					CAST(A.invoice_date AS DATE) AS invoice_date,
+					CASE 
+						WHEN A.quantity<=0 THEN B.quantity
+						ELSE A.quantity END AS quantity,
+					CASE 
+						WHEN A.unit_price<=0 THEN B.unit_price
+						ELSE A.unit_price END AS unit_price,
+					ISNULL(CAST(A.customer_id AS NVARCHAR),'unavailable') AS customer_id,
+					TRIM(A.country) AS country
+				FROM CTE AS A
+				INNER JOIN( SELECT 
+					*,
+					ROW_NUMBER() OVER(PARTITION BY 
+												stock_key,
+												product_name,
+												invoice_key,
+												invoice_date,
+												quantity,
+												unit_price,
+												customer_id,
+												country
+												ORDER BY invoice_date ASC) AS  RN
+				FROM bronze.onlineretail
+				WHERE product_name IS NOT NULL AND  unit_price>0 AND  quantity>0) AS B
+				ON A.stock_key = B.stock_key
+				AND A.invoice_key = B.invoice_key AND  B.RN=1
+				WHERE A.RN=1 ;
 
+
+					
 			SET @batch_end_time=GETDATE();
 			SET @end_time=GETDATE();
 			PRINT '===========================================================================================';
