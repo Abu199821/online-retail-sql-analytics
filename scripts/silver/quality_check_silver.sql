@@ -78,12 +78,12 @@ FROM bronze.onlineretail;
 SELECT 
 COUNT(*) NULLS
 FROM silver.onlineretail
-where customer_id is null
+WHERE customer_id IS NULL;
 
 --product_name null checking 
 
 SELECT * FROM silver.onlineretail
-WHERE stock_key in (SELECT * FROM silver.onlineretail WHERE product_name is null) and product_name is not null;
+WHERE stock_key IN (SELECT * FROM silver.onlineretail WHERE product_name IS NULL) AND product_name IS NOT NULL;
 -- checking negative quanitites and prices
 -- NEGATIVE_QUANTITIES  - 10624
 -- NEGATIVE_PRICES - 2
@@ -94,12 +94,20 @@ SUM(CASE WHEN quantity<0 then 1 ELSE 0 END ) AS negative_quantities,
 SUM(CASE WHEN quantity=0 THEN 1 ELSE 0 END) AS zero_quantities,
 SUM(CASE WHEN unit_price<0 THEN 1 ELSE 0 END) AS negative_prices,
 SUM(CASE WHEN unit_price=0 THEN 1 ELSE 0 END) AS zero_prices
-FROM silver.onlineretail
+FROM silver.onlineretail;
 
 
 -- checking null values that is possible to recover by another stock_key
 
-SELECT a.stock_key,b.stock_key,a.product_name,b.product_name FROM silver.onlineretail as a
-INNER JOIN silver.onlineretail as b
+SELECT a.stock_key,b.stock_key,a.product_name,b.product_name FROM silver.onlineretail AS a
+INNER JOIN silver.onlineretail AS b
 ON a.stock_key=b.stock_key
-WHERE a.product_name is null and b.product_name is not null
+WHERE a.product_name IS NULL AND b.product_name IS NOT NULL;
+
+
+
+-- Checking invoice_date validation 
+SELECT *
+FROM bronze.onlineretail
+WHERE TRY_CONVERT(DATE, invoice_date, 23) > CAST(GETDATE() AS DATE);
+
