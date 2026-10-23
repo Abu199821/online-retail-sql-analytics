@@ -105,14 +105,8 @@ BEGIN
 				            )
 				        else A.unit_price
 				    end as unit_price,
-				
-				    ISNULL(
-				        cast(A.customer_id as NVARCHAR(50)),
-				        'unavailable'
-				    ) as customer_id,
-				
+				    customer_id,				
 				    TRIM(A.country) as country
-				
 				from cte as A
 				where A.RN = 1;
 
