@@ -105,7 +105,7 @@ BEGIN
 				            )
 				        else A.unit_price
 				    end as unit_price,
-				    customer_id,				
+				    A.customer_id,				
 				    TRIM(A.country) as country
 				from cte as A
 				where A.RN = 1;
