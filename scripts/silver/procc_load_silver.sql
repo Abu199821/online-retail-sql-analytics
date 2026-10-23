@@ -34,65 +34,87 @@ BEGIN
 				SET @batch_start_time=GETDATE();
 				SET @start_time=GETDATE();
 
-				INSERT INTO silver.onlineretail (
-				Invoice_key,
-				stock_key,
-				product_name,
-				quantity,
-				invoice_date,
-				unit_price,
-				customer_id,
-				country
-				)
-				WITH CTE AS(
-				SELECT *,
-					ROW_NUMBER() OVER(PARTITION BY 
-												stock_key,
-												product_name,
-												invoice_key,
-												invoice_date,
-												quantity,
-												unit_price,
-												customer_id,
-												country
-												ORDER BY invoice_date ASC) AS RN
-				FROM bronze.onlineretail)
-				SELECT 
-					TRIM(A.Invoice_key) AS invoice_key,
-					TRIM(A.stock_key) AS stock_key,
-				    CASE
-				    WHEN A.product_name IS NULL OR A.unit_price <= 0
-				        THEN COALESCE(B.product_name, A.product_name)
-				    ELSE ISNULL(A.product_name,'unavailable')
-				END AS product_name,
-					CAST(A.invoice_date AS DATE) AS invoice_date,
-					CASE 
-						WHEN A.quantity<=0 THEN B.quantity
-						ELSE A.quantity END AS quantity,
-					CASE 
-						WHEN A.unit_price<=0 THEN B.unit_price
-						ELSE A.unit_price END AS unit_price,
-					ISNULL(CAST(A.customer_id AS NVARCHAR),'unavailable') AS customer_id,
-					TRIM(A.country) AS country
-				FROM CTE AS A
-				INNER JOIN( SELECT 
-					*,
-					ROW_NUMBER() OVER(PARTITION BY 
-												stock_key,
-												product_name,
-												invoice_key,
-												invoice_date,
-												quantity,
-												unit_price,
-												customer_id,
-												country
-												ORDER BY invoice_date ASC) AS  RN
+				
+				WITH CTE AS
+				( SELECT *, ROW_NUMBER() OVER ( PARTITION BY stock_key,
+									                product_name,
+									                invoice_key,
+									                invoice_date,
+									                quantity,
+									                unit_price,
+									                customer_id,
+									                country
+				            ORDER BY invoice_date
+				        ) AS RN
 				FROM bronze.onlineretail
-				WHERE product_name IS NOT NULL AND  unit_price>0 AND  quantity>0) AS B
-				ON A.stock_key = B.stock_key
-				AND A.invoice_key = B.invoice_key AND  B.RN=1
-				WHERE A.RN=1 ;
-
+				)
+				
+				INSERT INTO silver.onlineretail
+				(
+				    invoice_key,
+				    stock_key,
+				    product_name,
+				    quantity,
+				    invoice_date,
+				    unit_price,
+				    customer_id,
+				    country
+				)
+				
+				SELECT
+				    TRIM(A.invoice_key) AS invoice_key,
+				    TRIM(A.stock_key) AS stock_key,
+				    case
+				        when A.product_name is null or A.unit_price <= 0
+				        then COALESCE(
+				                (
+				                select TOP 1 B.product_name
+				                from bronze.onlineretail as B
+				                where B.stock_key = A.stock_key and B.invoice_key = A.invoice_key
+				                  and B.product_name is not null and B.unit_price > 0
+				                  and B.quantity > 0 order by B.invoice_date ),
+				            A.product_name,
+				            'unavailable'
+				        )
+				        else A.product_name
+				    end as product_name,
+				
+				    case
+				        when A.quantity <= 0
+				        then
+				            (
+				                select  TOP 1 B.quantity
+				                from bronze.onlineretail as B
+				                where B.stock_key = A.stock_key  and B.invoice_key = A.invoice_key
+				                  and B.product_name is not null  and B.quantity > 0 and B.unit_price > 0
+				                order by B.invoice_date
+				            )
+				        else A.quantity
+				    end as quantity,
+				
+				    CAST(A.invoice_date AS DATE) AS invoice_date,
+				    case
+				        when A.unit_price <= 0  then
+				                (
+				                select TOP 1 B.unit_price
+				                from bronze.onlineretail as  B
+				                where B.stock_key = A.stock_key
+				                 and  B.invoice_key = A.invoice_key and  B.product_name is not null
+				                  and  B.quantity > 0  and  B.unit_price > 0
+				                   order by B.invoice_date
+				            )
+				        else A.unit_price
+				    end as unit_price,
+				
+				    ISNULL(
+				        cast(A.customer_id as NVARCHAR(50)),
+				        'unavailable'
+				    ) as customer_id,
+				
+				    TRIM(A.country) as country
+				
+				from cte as A
+				where A.RN = 1;
 
 					
 			SET @batch_end_time=GETDATE();
