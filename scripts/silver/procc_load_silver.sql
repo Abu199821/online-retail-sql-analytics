@@ -34,7 +34,7 @@ BEGIN
 				SET @batch_start_time=GETDATE();
 				SET @start_time=GETDATE();
 
-				
+			
 				WITH duplicates AS(
 					SELECT *,
 					ROW_NUMBER() OVER ( PARTITION BY stock_key,
@@ -96,6 +96,16 @@ BEGIN
 				INNER JOIN unit_price as c
 				ON x.stock_key=c.stock_key
 				WHERE c.row_number3 =1 )
+				INSERT INTO silver.onlineretail(
+				invoice_key,
+				stock_key,
+				product_name,
+				quantity,
+				invoice_date,
+				unit_price,
+				customer_id,
+				country
+				)
 				SELECT * FROM final_silver_table;
 
 
@@ -121,6 +131,11 @@ BEGIN
 			PRINT 'ERROR MESSAGE'+ ERROR_MESSAGE();
 			PRINT 'ERROR NUMBER' + CAST(ERROR_NUMBER() AS NVARCHAR);
 			PRINT 'ERROR STATE' + CAST(ERROR_STATE() AS NVARCHAR);
+
+			PRINT '===========================================================================================';
+	 END CATCH
+END;
+
 
 			PRINT '===========================================================================================';
 	 END CATCH
