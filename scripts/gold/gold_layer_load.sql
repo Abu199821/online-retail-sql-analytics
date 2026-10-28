@@ -19,14 +19,10 @@
         EXEC gold.load_gold;
 */
 
-
-
 CREATE OR ALTER PROCEDURE gold.load_gold
 AS
 BEGIN
-    SET NOCOUNT ON;
-    SET XACT_ABORT ON;
-
+	
     DECLARE
         @batch_start_time DATETIME = GETDATE(),
         @start_time       DATETIME,
@@ -37,15 +33,15 @@ BEGIN
 
         PRINT 'Gold layer loading started.';
 
-        -- Fact jadvalini avval tozalaymiz.
+        -- Cleaning Fact table
         DELETE FROM gold.fact_sales;
 
-        -- Dimension jadvallarini fact bo‘shagandan keyin tozalaymiz.
+        -- After being fact table empty , dimension tables will ber cleaned .
         DELETE FROM gold.dim_product;
         DELETE FROM gold.dim_customer;
         DELETE FROM gold.dim_date;
-
-        -- Product dimension: har bir stock_key uchun bitta qator.
+		-- Customer dimension: NULLs in customer id will be replaced with -1.
+        
         SET @start_time = GETDATE();
 
        ;WITH customer_cte AS
@@ -70,19 +66,33 @@ BEGIN
             + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR(20))
             + ' seconds.';
 
-        -- Customer dimension: NULL customer_id lar -1 ga aylantiriladi.
+      -- Product dimension: One row for every stock_key
         SET @start_time = GETDATE();
 
-        INSERT INTO gold.dim_customer (customer_id)
-        SELECT DISTINCT COALESCE(customer_id, -1)
-        FROM silver.onlineretail;
+		;WITH product_cte AS
+		(
+			SELECT
+				stock_key,
+				product_name,
+				ROW_NUMBER() OVER (
+					PARTITION BY stock_key
+					ORDER BY CASE WHEN product_name IS NOT NULL THEN 0 ELSE 1 END,
+							 product_name
+				) AS rn
+			FROM silver.onlineretail
+			WHERE stock_key IS NOT NULL
+		)
+		INSERT INTO gold.dim_product (stock_key, product_name)
+		SELECT stock_key, product_name
+		FROM product_cte
+		WHERE rn = 1;
 
         SET @end_time = GETDATE();
         PRINT 'dim_customer loaded in '
             + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR(20))
             + ' seconds.';
 
-        -- Date dimension: full_date vaqt qismini saqlamaydi.
+        -- Date dimension: Full date will not save time part .
         SET @start_time = GETDATE();
 
         ;WITH distinct_dates AS
@@ -116,7 +126,7 @@ BEGIN
             + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR(20))
             + ' seconds.';
 
-        -- Fact: dimension kalitlari dimension jadvallaridan olinadi.
+        -- Fact: All dimenstion keys inserted from dimenstion tables.
         SET @start_time = GETDATE();
 
         INSERT INTO gold.fact_sales
@@ -167,3 +177,8 @@ BEGIN
     END CATCH
 END;
 GO
+
+
+
+
+
