@@ -1,3 +1,26 @@
+/*
+    Project:    Online Retail SQL Analytics
+    Author:     ABDULHAFIZ JURAEV
+    Procedure:  gold.load_gold
+
+    Purpose:
+        Reload the Gold layer from the Silver layer for analytics
+        using batch processing.
+
+    Processing approach:
+        1. Delete existing rows from gold.fact_sales first, followed by
+           the dimension tables, to respect foreign key relationships.
+        2. Use DELETE instead of DROP so table structures, primary keys,
+           and foreign key constraints remain in place.
+        3. Reload the product, customer, and date dimensions from Silver.
+        4. Reload gold.fact_sales using the keys generated in the dimensions.
+
+    Usage:
+        EXEC gold.load_gold;
+*/
+
+
+
 CREATE OR ALTER PROCEDURE gold.load_gold
 AS
 BEGIN
