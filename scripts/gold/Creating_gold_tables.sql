@@ -28,7 +28,6 @@ Usage:
 
 
 
-
 CREATE OR ALTER PROCEDURE gold.create_tables
 AS
 BEGIN
@@ -38,11 +37,9 @@ BEGIN
     PRINT 'CREATE TABLES';
     PRINT '******************';
 
-   
     IF OBJECT_ID('gold.fact_sales', 'U') IS NOT NULL
         DROP TABLE gold.fact_sales;
 
-   
     IF OBJECT_ID('gold.dim_product', 'U') IS NOT NULL
         DROP TABLE gold.dim_product;
 
@@ -52,7 +49,6 @@ BEGIN
     IF OBJECT_ID('gold.dim_date', 'U') IS NOT NULL
         DROP TABLE gold.dim_date;
 
- 
     CREATE TABLE gold.dim_product (
         product_key INT IDENTITY(1,1) PRIMARY KEY,
         stock_key NVARCHAR(50),
@@ -61,15 +57,14 @@ BEGIN
 
     PRINT '>> gold.dim_product created.';
 
-    
     CREATE TABLE gold.dim_customer (
         customer_key INT IDENTITY(1,1) PRIMARY KEY,
-        customer_id NVARCHAR(50)
+        customer_id NVARCHAR(50),
+        country NVARCHAR(100)
     );
 
     PRINT '>> gold.dim_customer created.';
 
-  
     CREATE TABLE gold.dim_date (
         date_key INT PRIMARY KEY,
         full_date DATE,
