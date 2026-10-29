@@ -67,4 +67,4 @@ The pipeline is designed for full snapshot reloads. Run the scripts in Bronze �
 ## 7. Related documentation
 
 - [Data Dictionary](data_dictionary.md) — table and column definitions.
-- [Analytics Notes](analytics_notes.md) — transaction categories, metric definitions, and interpretation caveats.
+
